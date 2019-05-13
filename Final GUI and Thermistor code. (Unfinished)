@@ -1,0 +1,79 @@
+# using tkinter to create gui
+
+import os
+import glob
+import time
+import Tkinter as tk
+
+temp = 70
+window = tk.Tk()
+window.title("Thermostat")
+window.geometry("1000x400")
+
+
+os.system('modprobe w1-gpio')
+os.system('modprobe w1-therm')
+
+base_dir = '/sys/bus/w1/devices/'
+device_folder = glob.glob(base_dir + '28*')[0]
+device_file = device_folder + '/w1_slave'
+
+def read_temp_raw():
+    f = open(device_file, 'r')
+    lines = f.readlines()
+    f.close()
+    return lines
+
+
+
+# increasing and decreasing temp to reach desired temp
+def onclick(args):
+    global temp
+    
+    if args == 1:
+        temp += 1
+        currentTemp.config(text=temp)
+        print("Button 1",temp)
+
+    if args == 2:
+        temp -= 1
+        currentTemp.config(text=temp)
+        print("Button 2", temp)
+
+
+def currentTemp():
+    lines = read_temp_raw()
+    while lines[0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    equals_pos = lines[1].find('t=')
+    if equals_pos != -1:
+        temp_string = lines[1][equals_pos+2:]
+        temp_f = (int(temp_string) / 1000.0) * 9.0 / 5.0 + 32.0 # TEMP_STRING IS THE SENSOR OUTPUT, MAKE SURE IT'S AN INTEGER TO DO THE MATH
+        temp_f = str(round(temp_f, 1)) # ROUND THE RESULT TO 1 PLACE AFTER THE DECIMAL, THEN CONVERT IT TO A STRING
+        return temp_f
+        
+        
+
+# Labels
+labelfont = ('times', 20, 'bold')
+theLabel = tk.Label(window, text=" Set the Thermostat!", bg="black", fg="white", width=60, height=2, font=labelfont)
+
+tempfont = ("times", 50, "bold")
+currentTemp = tk.Label(window, text=temp, bg="white", fg="black", width=10, height=2, font=tempfont)
+
+theLabel.pack({"side": "top"}, fill="x")
+currentTemp.pack({"side": "left"}, fill="y")
+
+# Buttons
+buttonfont = ("times", 15, "bold")
+button1 = tk.Button(window, text="+", fg="white", bg="red", font=buttonfont, height=15, width=25, command=lambda: onclick(1))
+button2 = tk.Button(window, text="-", fg="white", bg="blue", font=buttonfont, height=15, width=25, command=lambda: onclick(2))
+
+button1.pack({"side": "left"})
+button2.pack({"side": "left"})
+
+
+window.mainloop()
+
+          
