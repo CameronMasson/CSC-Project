@@ -41,7 +41,7 @@ def onclick(args):
         print("Button 2", temp)
 
 
-def currentTemp():
+def Thermistor():
     lines = read_temp_raw()
     while lines[0].strip()[-3:] != 'YES':
         time.sleep(0.2)
@@ -51,7 +51,9 @@ def currentTemp():
         temp_string = lines[1][equals_pos+2:]
         temp_f = (int(temp_string) / 1000.0) * 9.0 / 5.0 + 32.0 # TEMP_STRING IS THE SENSOR OUTPUT, MAKE SURE IT'S AN INTEGER TO DO THE MATH
         temp_f = str(round(temp_f, 1)) # ROUND THE RESULT TO 1 PLACE AFTER THE DECIMAL, THEN CONVERT IT TO A STRING
-        return temp_f
+        currentTemp.config(text=temp_f)
+        print temp_f
+        window.after(5000, Thermistor)
         
         
 
@@ -73,7 +75,10 @@ button2 = tk.Button(window, text="-", fg="white", bg="blue", font=buttonfont, he
 button1.pack({"side": "left"})
 button2.pack({"side": "left"})
 
-
+window.after(5000, Thermistor)
 window.mainloop()
+
+          
+
 
           
